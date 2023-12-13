@@ -4,21 +4,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Player : MonoBehaviour//, IKitchenObjectParent
+public class Player : MonoBehaviour, IKitchenObjectParent
 {
     public static Player Instance { get; private set; }
     public event EventHandler<OnSelectedCounterChangedEventArgs> OnSelectedCounterChanged;
     public class OnSelectedCounterChangedEventArgs : EventArgs
     {
-        public ClearCounter selectedCounter;
+        public BaseCounter selectedCounter;
     }
 
     private bool isWalking;
     private Vector3 lastInteractDir;
-    private ClearCounter selectedCounter;
+    private BaseCounter selectedCounter;
+    private KitchenObject kitchenObject;
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private GameInput gameInput;
     [SerializeField] private LayerMask countersLayerMask;
+    [SerializeField] private Transform kitchenObjectHoldPoint;
 
     private void Awake()
     {
@@ -66,12 +68,12 @@ public class Player : MonoBehaviour//, IKitchenObjectParent
         float interactDistance = 2f;
         if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
         {
-            if (raycastHit.transform.TryGetComponent(out ClearCounter clearCounter))
+            if (raycastHit.transform.TryGetComponent(out BaseCounter BaseCounter))
             {
                 // has clearcounter
-                if (clearCounter != selectedCounter)
+                if (BaseCounter != selectedCounter)
                 {
-                    SetSelectedCounter(clearCounter);
+                    SetSelectedCounter(BaseCounter);
                 }
 
             }
@@ -87,7 +89,7 @@ public class Player : MonoBehaviour//, IKitchenObjectParent
         }
     }
 
-    private void SetSelectedCounter(ClearCounter selectedCounter)
+    private void SetSelectedCounter(BaseCounter selectedCounter)
     {
         this.selectedCounter = selectedCounter;
 
@@ -153,5 +155,30 @@ public class Player : MonoBehaviour//, IKitchenObjectParent
 
         float rotateSpeed = 10f;
         transform.forward = Vector3.Slerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
+    }
+
+    public Transform GetKitchenObjectFollowTransform()
+    {
+        return kitchenObjectHoldPoint;
+    }
+
+    public void setKitchenObject(KitchenObject kitchenObject)
+    {
+        this.kitchenObject = kitchenObject;
+    }
+
+    public KitchenObject GetKitchenObject()
+    {
+        return kitchenObject;
+    }
+
+    public void ClearKitchenObject()
+    {
+        kitchenObject = null;
+    }
+
+    public bool HasKitchenObject()
+    {
+        return kitchenObject != null;
     }
 }
